@@ -9,5 +9,12 @@
 <body>
     <h1>Fasten your seatbelts</h1>
     <p>The power of the sun in the palm of my hand</p>
+    <button onclick="castSpell()">Click to Cast a Spell!</button>
+    <p id="spellResult"></p>
+    <script>
+    function castSpell() {
+        document.getElementById("spellResult").innerText = "Your spell has been cast successfully!";
+    }
+    </script>
 </body>
 </html>
