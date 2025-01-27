@@ -1,5 +1,5 @@
-import FilteredRenderer from './lib/Viz/FilteredRenderer.js'
-import Standard2DVertexColorObject from './lib/DSViz/VertexColorObject.js'
+import FilteredRenderer from '/lib/Viz/FilteredRenderer.js'
+import Standard2DVertexColorObject from '/lib/DSViz/VertexColorObject.js'
     
 async function init() {
     // Create a canvas tag
