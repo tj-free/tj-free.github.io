@@ -2,6 +2,7 @@
 <html>
     <meta>
         <link rel="stylesheet" type="text/css" href="display.css">
+        <script type="module" src="https://cdn.jsdelivr.net/npm/zero-md@3?register"></script>
     </meta>
 <head>
     <title>TJ's Arcane Portal</title>
@@ -11,6 +12,7 @@
     <p>The power of the sun in the palm of my hand</p>
     <button onclick="castSpell()">Click to Cast a Spell!</button>
     <p id="spellResult"></p>
+    <zero-md src="README.md"></zero-md>
     <script>
     function castSpell() {
         document.getElementById("spellResult").innerText = "Your spell has been cast successfully!";
