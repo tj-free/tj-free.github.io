@@ -1,1 +1,77 @@
-const _0x45fc49=_0x1eb4;(function(_0x137157,_0x31d583){const _0x550c23=_0x1eb4,_0x685baf=_0x137157();while(!![]){try{const _0x15614d=parseInt(_0x550c23(0x123))/0x1*(-parseInt(_0x550c23(0x124))/0x2)+parseInt(_0x550c23(0x11d))/0x3+parseInt(_0x550c23(0x10f))/0x4+parseInt(_0x550c23(0x113))/0x5*(parseInt(_0x550c23(0x10d))/0x6)+parseInt(_0x550c23(0x111))/0x7*(-parseInt(_0x550c23(0x107))/0x8)+parseInt(_0x550c23(0x11b))/0x9*(parseInt(_0x550c23(0x118))/0xa)+-parseInt(_0x550c23(0x116))/0xb;if(_0x15614d===_0x31d583)break;else _0x685baf['push'](_0x685baf['shift']());}catch(_0x319cc8){_0x685baf['push'](_0x685baf['shift']());}}}(_0x22cc,0x3a4f3));import _0x58a9c9 from'/lib/Viz/2DRenderer.js';import _0x2aec27 from'/lib/DSViz/ParticleSystemObject.js';import _0x2d48a8 from'/lib/DSViz/StandardTextObject.js';function _0x22cc(){const _0x2d5b53=['render','7880OwdRAI','106HxVPlM','104FPfYpX','fps:\x20??','userAgent','message','updateText','appendChild','18odvaha','fps:\x20','1524428AgDQXe','canvas','221522LZFJic','now','506395iSLThA','_canvas','_canvasFormat','1495725BFhDwj','renderCanvas','53480VsVBuq','_device','getElementById','657IZJtDn','then','385500DyzwDk','catch','createElement','init','innerHTML'];_0x22cc=function(){return _0x2d5b53;};return _0x22cc();}async function init(){const _0x3fe1a7=_0x1eb4,_0x487385=document[_0x3fe1a7(0x11f)](_0x3fe1a7(0x110));_0x487385['id']=_0x3fe1a7(0x117),document['body']['appendChild'](_0x487385);const _0x1324fc=new _0x58a9c9(_0x487385);await _0x1324fc[_0x3fe1a7(0x120)]();const _0x21446d=new _0x2aec27(_0x1324fc[_0x3fe1a7(0x119)],_0x1324fc[_0x3fe1a7(0x115)],_0x1324fc[_0x3fe1a7(0x114)]);await _0x1324fc['appendSceneObject'](_0x21446d);var _0x2c5102,_0x1dc779=new _0x2d48a8(_0x3fe1a7(0x108)),_0xe0183e=0x0,_0x48774e=16.666666666666668;let _0x44ac2b=()=>{const _0x213b6d=_0x3fe1a7;let _0x1c1f81=Date['now']()-_0x2c5102;_0x1c1f81>_0x48774e&&(++_0xe0183e,_0x2c5102=Date['now']()-_0x1c1f81%_0x48774e,_0x1324fc[_0x213b6d(0x122)]()),requestAnimationFrame(_0x44ac2b);};return _0x2c5102=Date[_0x3fe1a7(0x112)](),_0x44ac2b(),setInterval(()=>{const _0x1dbdfe=_0x3fe1a7;_0x1dc779[_0x1dbdfe(0x10b)](_0x1dbdfe(0x10e)+_0xe0183e),_0xe0183e=0x0;},0x3e8),_0x1324fc;}function _0x1eb4(_0x1c3c95,_0x46f2a9){const _0x22ccba=_0x22cc();return _0x1eb4=function(_0x1eb435,_0x50ee7e){_0x1eb435=_0x1eb435-0x107;let _0x34cf42=_0x22ccba[_0x1eb435];return _0x34cf42;},_0x1eb4(_0x1c3c95,_0x46f2a9);}init()[_0x45fc49(0x11c)](_0x123368=>{})[_0x45fc49(0x11e)](_0x3f58fb=>{const _0x1f9a27=_0x45fc49,_0x5623cf=document['createElement']('p');_0x5623cf[_0x1f9a27(0x121)]=navigator[_0x1f9a27(0x109)]+'</br>'+_0x3f58fb[_0x1f9a27(0x10a)],document['body'][_0x1f9a27(0x10c)](_0x5623cf),document[_0x1f9a27(0x11a)](_0x1f9a27(0x117))['remove']();});
+/*!
+ * Copyright (c) 2025 SingChun LEE @ Bucknell University. CC BY-NC 4.0.
+ * 
+ * This code is provided mainly for educational purposes at Bucknell University.
+ *
+ * This code is licensed under the Creative Commons Attribution-NonCommerical 4.0
+ * International License. To view a copy of the license, visit 
+ *   https://creativecommons.org/licenses/by-nc/4.0/
+ * or send a letter to Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
+ *
+ * You are free to:
+ *  - Share: copy and redistribute the material in any medium or format.
+ *  - Adapt: remix, transform, and build upon the material.
+ *
+ * Under the following terms:
+ *  - Attribution: You must give appropriate credit, provide a link to the license,
+ *                 and indicate if changes where made.
+ *  - NonCommerical: You may not use the material for commerical purposes.
+ *  - No additional restrictions: You may not apply legal terms or technological 
+ *                                measures that legally restrict others from doing
+ *                                anything the license permits.
+ */
+
+// Check your browser supports: https://github.com/gpuweb/gpuweb/wiki/Implementation-Status#implementation-status
+// Need to enable experimental flags chrome://flags/
+// Chrome & Edge 113+ : Enable Vulkan, Default ANGLE Vulkan, Vulkan from ANGLE, Unsafe WebGPU Support, and WebGPU Developer Features (if exsits)
+// Firefox Nightly: sudo snap install firefox --channel=latext/edge or download from https://www.mozilla.org/en-US/firefox/channel/desktop/
+
+import Renderer from '/lib/Viz/2DRenderer.js'
+import ParticleSystemObject from '/lib/DSViz/ParticleSystemObject.js'
+import StandardTextObject from '/lib/DSViz/StandardTextObject.js'
+
+async function init() {
+  // Create a canvas tag
+  const canvasTag = document.createElement('canvas');
+  canvasTag.id = "renderCanvas";
+  document.body.appendChild(canvasTag);
+  // Create a 2d animated renderer
+  const renderer = new Renderer(canvasTag);
+  await renderer.init();
+  const particles = new ParticleSystemObject(renderer._device, renderer._canvasFormat, renderer._canvas);
+  await renderer.appendSceneObject(particles);
+  let fps = '??';
+  var fpsText = new StandardTextObject('fps: ' + fps);
+  
+  // run animation at 60 fps
+  var frameCnt = 0;
+  var tgtFPS = 60;
+  var secPerFrame = 1. / tgtFPS;
+  var frameInterval = secPerFrame * 1000;
+  var lastCalled;
+  let renderFrame = () => {
+    let elapsed = Date.now() - lastCalled;
+    if (elapsed > frameInterval) {
+      ++frameCnt;
+      lastCalled = Date.now() - (elapsed % frameInterval);
+      renderer.render();
+    }
+    requestAnimationFrame(renderFrame);
+  };
+  lastCalled = Date.now();
+  renderFrame();
+  setInterval(() => { 
+    fpsText.updateText('fps: ' + frameCnt);
+    frameCnt = 0;
+  }, 1000); // call every 1000 ms
+  return renderer;
+}
+
+init().then( ret => {
+  console.log(ret);
+}).catch( error => {
+  const pTag = document.createElement('p');
+  pTag.innerHTML = navigator.userAgent + "</br>" + error.message;
+  document.body.appendChild(pTag);
+  document.getElementById("renderCanvas").remove();
+});
