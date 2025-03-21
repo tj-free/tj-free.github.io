@@ -114,6 +114,8 @@ async function init() {
     const mouse = new Float32Array([mouseX,mouseY]);
     polygon.updateMouseBuffer(mouse)
   });
+
+  
   
   // run animation at 60 fps
   var frameCnt = 0;

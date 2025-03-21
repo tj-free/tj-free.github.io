@@ -64,6 +64,13 @@ export default class PolygonObject extends SceneObject {
       size: 8, // 32 bits, 4 bytes in a float
       usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
     });
+
+    // create winding number buffer
+    this._windingNumberBuffer = this._device.createBuffer({
+      label: "Winding Number",
+      size: 4, // 32 bits, 4 bytes in a float
+      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+    });
   }
   
   async createShaders() {
@@ -84,6 +91,10 @@ export default class PolygonObject extends SceneObject {
         binding: 1,
         visibility: GPUShaderStage.COMPUTE,
         buffer: { type: "read-only-storage"}
+      },{
+        binding: 2,
+        visibility: GPUShaderStage.COMPUTE,
+        buffer: { type: "storage"}
       }]
     });
 
@@ -126,6 +137,10 @@ export default class PolygonObject extends SceneObject {
           {
             binding: 1,
             resource: { buffer: this._vertexBuffer }
+          },
+          {
+            binding: 2,
+            resource: { buffer: this._windingNumberBuffer }
           }
         ],
       });
