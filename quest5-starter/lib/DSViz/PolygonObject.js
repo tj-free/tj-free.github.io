@@ -57,20 +57,47 @@ export default class PolygonObject extends SceneObject {
       },
       ]
     };
+
+    // create mouse buffer
+    this._mouseBuffer = this._device.createBuffer({
+      label: "Mouse",
+      size: 8, // 32 bits, 4 bytes in a float
+      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+    });
   }
   
   async createShaders() {
-    let shaderCode = await this.loadShader("/shaders/standard2d.wgsl");
+    let shaderCode = await this.loadShader("/shaders/polygon.wgsl");
     this._shaderModule = this._device.createShaderModule({
       label: "Shader " + this.getName(),
       code: shaderCode,
     }); 
+
+    // bind group layouts
+    this._bindGroupLayout = this._device.createBindGroupLayout({
+      label: "Grid Bind Group Layout " + this.getName(),
+      entries: [{
+        binding: 0,
+        visibility: GPUShaderStage.COMPUTE,
+        buffer: { type: "read-only-storage"}
+      },{
+        binding: 1,
+        visibility: GPUShaderStage.COMPUTE,
+        buffer: { type: "read-only-storage"}
+      }]
+    });
+
+    // create the pipeline layout using the bind group layout
+    this._pipelineLayout = this._device.createPipelineLayout({
+      label: "Polygon Pipeline Layout",
+      bindGroupLayouts: [ this._bindGroupLayout ],
+    });
   }
   
   async createRenderPipeline() {
     this._renderPipeline = this._device.createRenderPipeline({
       label: "Render Pipeline " + this.getName(),
-      layout: "auto",
+      layout: this._pipelineLayout,
       vertex: {
         module: this._shaderModule,     // the shader code
         entryPoint: "vertexMain",          // the shader function
@@ -87,16 +114,49 @@ export default class PolygonObject extends SceneObject {
         topology: 'line-strip'
       }
     }); 
+
+    this._bindGroup =
+      this._device.createBindGroup({
+        layout: this._renderPipeline.getBindGroupLayout(0),
+        entries: [
+          {
+            binding: 0,
+            resource: { buffer: this._mouseBuffer }
+          },
+          {
+            binding: 1,
+            resource: { buffer: this._vertexBuffer }
+          }
+        ],
+      });
   }
   
   render(pass) {
     // add to render pass to draw the plane
     pass.setPipeline(this._renderPipeline);
     pass.setVertexBuffer(0, this._vertexBuffer); // bind the vertex buffer
+    pass.setBindGroup(0, this._bindGroup);
     pass.draw(this._numV);         // draw all vertices
   }
   
-  async createComputePipeline() {}
+  async createComputePipeline() {
+    this._computePipeline = this._device.createComputePipeline({
+      label: "Compute Pipeline " + this.getName(),
+      layout: "auto",
+      compute: {
+        module: this._shaderModule,
+        entryPoint: "computeMain",
+      },
+    });
+  }
   
-  compute(pass) {}
+  updateMouseBuffer(mouse) {
+    this._device.queue.writeBuffer(this._mouseBuffer, 0, mouse);
+  }
+
+  compute(pass) {
+    pass.setPipeline(this._computePipeline);
+    pass.setBindGroup(0, this._bindGroup);
+    pass.dispatchWorkgroups(Math.ceil(this._numV / 256));
+  }
 }

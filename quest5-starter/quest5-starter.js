@@ -38,29 +38,82 @@ async function init() {
   // Create a 2d animated renderer
   const renderer = new Renderer(canvasTag);
   await renderer.init();
-  const polygon = new PolygonObject(renderer._device, renderer._canvasFormat, '/assets/box.polygon');
+  //const polygon = new PolygonObject(renderer._device, renderer._canvasFormat, '/assets/box.polygon');
+  const polygon = new PolygonObject(renderer._device, renderer._canvasFormat, '/assets/dense.polygon');
   await renderer.appendSceneObject(polygon);
   let fps = '??';
   var fpsText = new StandardTextObject('fps: ' + fps);
 
-  // look at mouse
+  // // look at mouse and determine if it's inside
+  // canvasTag.addEventListener('mousemove', (e) => {
+  //   const mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+  //   const mouseY = (-e.clientY / window.innerHeight) * 2 + 1;
+
+  //   const mouseP = new Float32Array([mouseX,mouseY]);
+  //   const boundary = polygon._polygon;
+  //   const vertices = boundary._polygon;
+
+  //   // // signed triangle test
+  //   // var inside = true;
+  //   // for (var i = 0; i < vertices.length-1; i++) {
+  //   //   inside = inside && boundary.isInside(vertices[i],vertices[i+1],mouseP);
+  //   // }
+
+  //   // // winding number (even vs odd)
+  //   // var wind = 0;
+  //   // // check every edge
+  //   // for (var i = 0; i < vertices.length-1; i++) {
+  //   //   // will a horizontal line from the point cut this edge?
+  //   //   if (mouseX <= vertices[i][0] || mouseX <= vertices[i+1][0]) {
+  //   //     if ( (mouseY <= vertices[i][1] && mouseY >= vertices[i+1][1]) ||
+  //   //           (mouseY <= vertices[i+1][1] && mouseY >= vertices[i][1]) ) {
+  //   //           // check area
+  //   //           wind += 1;
+  //   //       }
+  //   //   }
+      
+  //   // }
+  //   // var inside;
+  //   // if (wind % 2 == 0) {
+  //   //   inside = false;
+  //   // } else {
+  //   //   inside = true;
+  //   // }
+
+  //   // winding number (zero) 
+  //   var wind = 0;
+  //   // check every edge
+  //   for (var i = 0; i < vertices.length-1; i++) {
+  //     // will a horizontal line from the point cut this edge?
+  //     if (mouseX <= vertices[i][0] || mouseX <= vertices[i+1][0]) {
+  //       if ( (mouseY <= vertices[i][1] && mouseY >= vertices[i+1][1]) ||
+  //             (mouseY <= vertices[i+1][1] && mouseY >= vertices[i][1]) ) {
+  //             // check area
+  //             if (boundary.isInside(vertices[i],vertices[i+1],mouseP)) {
+  //               wind += 1;
+  //             } else {
+  //               wind -= 1;
+  //             }
+  //         }
+  //     }
+      
+  //   }
+  //   var inside;
+  //   if (wind == 0) {
+  //     inside = false;
+  //   } else {
+  //     inside = true;
+  //   }
+  //   console.log(inside);
+  // });
+
+  // create mouse buffer
   canvasTag.addEventListener('mousemove', (e) => {
-    const mouseX = (e.clientX / window.innerWidth) * 2 - 1;
-    const mouseY = (-e.clientY / window.innerHeight) * 2 + 1;
-
-    const mouseP = new Float32Array([mouseX,mouseY]);
-    const boundary = polygon._polygon;
-    const vertices = boundary._polygon;
-
-    var inside = true;
-    for (var i = 0; i < vertices.length-1; i++) {
-      inside = inside && boundary.isInside(vertices[i],vertices[i+1],mouseP);
-    }
-    console.log(inside);
+    var mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+    var mouseY = (-e.clientY / window.innerHeight) * 2 + 1;
+    const mouse = new Float32Array([mouseX,mouseY]);
+    polygon.updateMouseBuffer(mouse)
   });
-
-  
-  
   
   // run animation at 60 fps
   var frameCnt = 0;
