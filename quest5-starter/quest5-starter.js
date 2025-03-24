@@ -42,7 +42,9 @@ async function init() {
   const polygon = new PolygonObject(renderer._device, renderer._canvasFormat, '/assets/dense.polygon');
   await renderer.appendSceneObject(polygon);
   let fps = '??';
-  var fpsText = new StandardTextObject('fps: ' + fps);
+  var fpsText = new StandardTextObject('fps: ' + fps, '10');
+  let insideInit = 'unknown'
+  var InfoText = new StandardTextObject('Inside: ' + insideInit);
 
   // // look at mouse and determine if it's inside
   // canvasTag.addEventListener('mousemove', (e) => {
@@ -108,15 +110,15 @@ async function init() {
   // });
 
   // create mouse buffer
-  canvasTag.addEventListener('mousemove', (e) => {
+  canvasTag.addEventListener('mousemove', async (e) => {
     var mouseX = (e.clientX / window.innerWidth) * 2 - 1;
     var mouseY = (-e.clientY / window.innerHeight) * 2 + 1;
     const mouse = new Float32Array([mouseX,mouseY]);
     polygon.updateMouseBuffer(mouse)
+    var inside = await polygon.checkWindingNumber();
+    InfoText.updateText('Inside: ' + inside);
   });
 
-  
-  
   // run animation at 60 fps
   var frameCnt = 0;
   var tgtFPS = 60;

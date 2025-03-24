@@ -22,7 +22,7 @@
  */
 
 export default class StandardTextObject {
-  constructor(inputText, spacing = 5, textFont = '18px Arial') {
+  constructor(inputText, right = '', left = '10', top = '10', spacing = 5, textFont = '18px Arial') {
     // a temp 2d canvas to draw text as an image
     this._textFont = textFont;
     this._lineSpacing = spacing;
@@ -32,8 +32,13 @@ export default class StandardTextObject {
     this.updateText(inputText);
     // add it to the document
     this._textCanvas.style.position = 'absolute';
-    this._textCanvas.style.top = '10px';
-    this._textCanvas.style.left = '10px';
+    
+    if (right != '') {
+      this._textCanvas.style.right = right + 'px';
+    } else {
+      this._textCanvas.style.left = left + 'px';
+    }
+    this._textCanvas.style.top = top + 'px';
     this._textCanvas.style.border = '1px solid red';
     document.body.appendChild(this._textCanvas);
   }

@@ -209,8 +209,31 @@ export default class TwoDGridSegmented {
   // an implementation of the winding number to check if a point is inside a polygon or not
   isInsideWindingNumber(p) {
     // TODO: Put you Winding Number implementation here
-    
-    return false;
+    var wind = 0;
+    // check every edge
+    var vertices = this._polygon;
+    for (var i = 0; i < vertices.length-1; i++) {
+      // will a horizontal line from the point cut this edge?
+      if (p[0] <= vertices[i][0] || p[0] <= vertices[i+1][0]) {
+        if ( (p[1] <= vertices[i][1] && p[1] >= vertices[i+1][1]) ||
+              (p[1] <= vertices[i+1][1] && p[1] >= vertices[i][1]) ) {
+              // check area
+              if (boundary.isInside(vertices[i],vertices[i+1],p)) {
+                wind += 1;
+              } else {
+                wind -= 1;
+              }
+          }
+      }
+      
+    }
+    var inside;
+    if (wind == 0) {
+      inside = false;
+    } else {
+      inside = true;
+    }
+    return inside;
   }
   
   isInside(segments, p) {

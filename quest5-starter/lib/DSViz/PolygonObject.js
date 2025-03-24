@@ -158,8 +158,8 @@ export default class PolygonObject extends SceneObject {
     pass.setVertexBuffer(0, this._vertexBuffer); // bind the vertex buffer
     pass.setBindGroup(0, this._bindGroup);
     pass.draw(this._numV);         // draw all vertices
-    this.checkWindingNumber();
-    //console.log(this._outside);
+    console.log(this._inside);//this.checkWindingNumber();
+    this._device.queue.writeBuffer(this._windingNumberBuffer, 0, new Int32Array(1));
   }
   
   async createComputePipeline() {
@@ -174,7 +174,7 @@ export default class PolygonObject extends SceneObject {
   }
 
   async checkWindingNumber() {
-    if (this._stageBuffer.mapState != "unmapped") return this._outside; // use the last result while waiting for the stage buffer to be ready
+    if (this._stageBuffer.mapState != "unmapped") return this.inside; // use the last result while waiting for the stage buffer to be ready
     // Create a command encoder to issue GPU commands
     const encoder = this._device.createCommandEncoder();
     encoder.copyBufferToBuffer(this._windingNumberBuffer, 0, this._stageBuffer, 0, 4); // this line use the command encoder to copy from the GPU storage buffer named this._windingNumberBuffer to the stage buffer this._stageBuffer with offset 0 and total 8 bytes
@@ -183,7 +183,7 @@ export default class PolygonObject extends SceneObject {
     const windingNumber = new Int32Array(this._stageBuffer.getMappedRange())[0]; // this line cast the result back to javascritp array
     this._inside = windingNumber != 0; // this is how we use the winding number to check if it is outside
     this._stageBuffer.unmap(); // this asks the GPU to unmap it for later use
-    console.log(windingNumber);
+    return this._inside;
   }
   
   updateMouseBuffer(mouse) {
