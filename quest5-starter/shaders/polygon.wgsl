@@ -78,10 +78,10 @@ fn computeMain(@builtin(global_invocation_id) global_id: vec3u) {
         if ( (mouseY <= v1[1] && mouseY >= v2[1]) ||
               (mouseY <= v2[1] && mouseY >= v1[1]) ) {
               // check area
-              if (isInside(v1,v2,mouse)) {
-                atomicAdd(wind, 1);
+              if (isInside(v1,v2,mouse) == 1) {
+                atomicAdd(&wind, 1);
               } else {
-                atomicAdd(wind, -1);
+                atomicAdd(&wind, -1);
               }
           }
       }

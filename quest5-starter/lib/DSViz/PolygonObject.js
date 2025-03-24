@@ -69,7 +69,13 @@ export default class PolygonObject extends SceneObject {
     this._windingNumberBuffer = this._device.createBuffer({
       label: "Winding Number",
       size: 4, // 32 bits, 4 bytes in a float
-      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
+    });
+
+    // Create a staging buffer for reading back data from the GPU
+    this._stageBuffer = this._device.createBuffer({
+      size: 4, // 8 bytes (assuming two 4-byte integers)
+      usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST,
     });
   }
   
@@ -152,17 +158,32 @@ export default class PolygonObject extends SceneObject {
     pass.setVertexBuffer(0, this._vertexBuffer); // bind the vertex buffer
     pass.setBindGroup(0, this._bindGroup);
     pass.draw(this._numV);         // draw all vertices
+    this.checkWindingNumber();
+    //console.log(this._outside);
   }
   
   async createComputePipeline() {
     this._computePipeline = this._device.createComputePipeline({
       label: "Compute Pipeline " + this.getName(),
-      layout: "auto",
+      layout: this._pipelineLayout,
       compute: {
         module: this._shaderModule,
         entryPoint: "computeMain",
       },
     });
+  }
+
+  async checkWindingNumber() {
+    if (this._stageBuffer.mapState != "unmapped") return this._outside; // use the last result while waiting for the stage buffer to be ready
+    // Create a command encoder to issue GPU commands
+    const encoder = this._device.createCommandEncoder();
+    encoder.copyBufferToBuffer(this._windingNumberBuffer, 0, this._stageBuffer, 0, 4); // this line use the command encoder to copy from the GPU storage buffer named this._windingNumberBuffer to the stage buffer this._stageBuffer with offset 0 and total 8 bytes
+    this._device.queue.submit([encoder.finish()]); // submit all GPU commands, now it will include the command to copy the results back to CPU
+    await this._stageBuffer.mapAsync(GPUMapMode.READ); // this line map the buffer to read the result
+    const windingNumber = new Int32Array(this._stageBuffer.getMappedRange())[0]; // this line cast the result back to javascritp array
+    this._inside = windingNumber != 0; // this is how we use the winding number to check if it is outside
+    this._stageBuffer.unmap(); // this asks the GPU to unmap it for later use
+    console.log(windingNumber);
   }
   
   updateMouseBuffer(mouse) {
