@@ -29,6 +29,11 @@ export default class PolygonObject extends SceneObject {
     super(device, canvasFormat);
     this._polygon = new Polygon(filename);
   }
+
+  async changePolygon(filename) {
+    this._polygon = new Polygon(filename);
+    await this.init();
+  }
   
   async createGeometry() {
     // Read vertices from polygon files

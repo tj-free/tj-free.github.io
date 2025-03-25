@@ -39,6 +39,7 @@ async function init() {
   const renderer = new Renderer(canvasTag);
   await renderer.init();
   //const polygon = new PolygonObject(renderer._device, renderer._canvasFormat, '/assets/box.polygon');
+  const polygonTypes = ["box.polygon","circle.polygon","star.polygon","human.polygon","dense.polygon"];
   const polygon = new PolygonObject(renderer._device, renderer._canvasFormat, '/assets/dense.polygon');
   await renderer.appendSceneObject(polygon);
   let fps = '??';
@@ -117,6 +118,14 @@ async function init() {
     polygon.updateMouseBuffer(mouse)
     var inside = await polygon.checkWindingNumber();
     InfoText.updateText('Inside: ' + inside);
+  });
+
+  window.addEventListener("keydown", (e) => {
+    switch (e.key) {
+      case 'w': case 'W': 
+        polygon.changePolygon('/assets/box.polygon');
+        break;
+    }
   });
 
   // run animation at 60 fps
