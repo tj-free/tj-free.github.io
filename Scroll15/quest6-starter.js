@@ -98,6 +98,55 @@ async function init() {
         camera.rotateZ(-movespeed,-rotSpeed);
         tracerObj.updateCameraPose();     
         break;
+        case 't': case 'T': 
+        tracerObj.moveY(-movespeed);
+        tracerObj.updateBoxPose();
+        //console.log(triangle._cameraPose);
+        break;
+      case 'g': case 'G': 
+        tracerObj.moveY(movespeed);
+        tracerObj.updateBoxPose();     
+        break;
+      case 'f': case 'F': 
+        tracerObj.moveX(-movespeed);
+        tracerObj.updateBoxPose();
+        break;
+      case 'h': case 'H': 
+        tracerObj.moveX(movespeed);
+        tracerObj.updateBoxPose();       
+        break;
+      case 'y': case 'Y': 
+        tracerObj.moveZ(movespeed);
+        tracerObj.updateBoxPose();
+        break;
+      case 'r': case 'R': 
+        tracerObj.moveZ(-movespeed);
+        tracerObj.updateBoxPose();     
+        break;
+      case 'ArrowDown':
+        tracerObj.rotateX(movespeed,rotSpeed);
+        tracerObj.updateBoxPose();
+        break;
+      case 'ArrowUp':  
+        tracerObj.rotateX(-movespeed,-rotSpeed);
+        tracerObj.updateBoxPose();     
+        break;
+      case 'ArrowRight':
+        tracerObj.rotateY(movespeed,-rotSpeed);
+        tracerObj.updateBoxPose();
+        break;
+      case 'ArrowLeft':   
+        tracerObj.rotateY(-movespeed,rotSpeed);
+        tracerObj.updateBoxPose();     
+        break;
+      case 'n': case 'N':
+        tracerObj.rotateZ(movespeed,rotSpeed);
+        tracerObj.updateBoxPose();
+        break;
+      case 'm': case 'M':   
+        tracerObj.rotateZ(-movespeed,-rotSpeed);
+        tracerObj.updateBoxPose();     
+        break;
     }
   });
   
