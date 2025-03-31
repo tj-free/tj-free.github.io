@@ -89,8 +89,21 @@ fn vertexMain(@location(0) pos: vec2f, @location(1) color: vec4f) -> VertexOutpu
 }
 
 @fragment // this compute the color of each pixel
-fn fragmentMain(@location(0) color: vec4f) -> @location(0) vec4f {
-  
+fn fragmentMain(@builtin(position) frag_coord: vec4f, @location(0) color: vec4f) -> @location(0) vec4f {
+  // Define the center of the circle (or square)
+  let center = vec2f(0.5, 0.5);
+
+  // Define the radius of the circle
+  let radius = 0.4;
+
+  // Calculate the distance from the fragment to the center
+  let distance = length(frag_coord.xy - center);
+
+  // Discard fragments outside the circle
+  if (distance > radius) {
+    discard;
+  } 
+
   return color; // (R, G, B, A)
 }
 
