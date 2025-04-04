@@ -37,6 +37,8 @@ struct Pose {
 
 
 @group(0) @binding(0) var<uniform> pose: Pose;
+@group(0) @binding(1) var inTexture: texture_2d<f32>;
+@group(0) @binding(2) var inSampler: sampler;
 
 fn geometricProduct(a: MultiVector, b: MultiVector) -> MultiVector {
   // ref: https://geometricalgebratutorial.com/pga/
@@ -73,24 +75,41 @@ fn applyMotorToPoint(p: vec2f, m: MultiVector) -> vec2f {
 
 struct VertexOutput {
   @builtin(position) position: vec4f,
-  @location(0) color: vec4f,
+  @location(0) texCoords: vec2f
 };
 
 @vertex // this compute the scene coordinate of each input vertex and its color information
-fn vertexMain(@location(0) pos: vec2f, @location(1) color: vec4f) -> VertexOutput {
+fn vertexMain(@location(0) pos: vec2f, @builtin(vertex_index) vIdx: u32) -> VertexOutput {
   var out: VertexOutput;
   // Apply motor
   let transformed = applyMotorToPoint(pos, pose.motor);
   // Apply scale
   let scaled = transformed * pose.scale;
   out.position = vec4f(scaled, 0, 1); // (pos, Z, W) = (X, Y, Z, W)
-  out.color = color;
+  // out.color = color;
+
+  
+  /*
+  var pos = array<vec2f, 6>(
+    vec2f(-1, -1), vec2f(1, -1), vec2f(-1, 1),
+    vec2f(1, -1), vec2f(1, 1), vec2f(-1, 1)
+  );
+  */
+  var texCoords = array<vec2f, 6>(
+    vec2f(0, 1), vec2f(1, 1), vec2f(0, 0),
+    vec2f(0, 0), vec2f(1, 0), vec2f(1, 1)
+  );
+
+  // out.position = vec4f(pos[vIdx], 0, 1);
+  //out.texCoords = vec2f(scaled); // texCoords[vIdx]; 
+  out.texCoords = texCoords[vIdx];
+
   return out;
 }
 
 @fragment // this compute the color of each pixel
-fn fragmentMain(@builtin(position) frag_coord: vec4f, @location(0) color: vec4f) -> @location(0) vec4f {
-  return color; // (R, G, B, A)
+fn fragmentMain(@builtin(position) frag_coord: vec4f, @location(0) texCoords: vec2f) -> @location(0) vec4f {
+  return textureSample(inTexture, inSampler, texCoords);
 }
 
 

@@ -21,11 +21,12 @@
  *                                anything the license permits.
  */
 
-import Standard2DPGAPosedVertexColorObject from "/lib/DSViz/Standard2DPGAPosedVertexColorObject.js"
+import Standard2DPGAPosedTextureObject from "/lib/DSViz/Standard2DPGAPosedTextureObject.js"
 import PGA2D from '/lib/Math/PGA2D.js'
 
-export default class PlanetObject extends Standard2DPGAPosedVertexColorObject {
-  constructor(device, canvasFormat, pose, start) {
+export default class PlanetObject extends Standard2DPGAPosedTextureObject {
+  constructor(device, canvasFormat, pose, start, image) {
+    
     let _vertices = new Float32Array([
       // x, y, r, g, b
        start[0] + -0.1, start[1] + -0.1, 255/255, 255/255, 255/255, 1, // Two triangles for quad
@@ -35,12 +36,14 @@ export default class PlanetObject extends Standard2DPGAPosedVertexColorObject {
        start[0] + 0.1, start[1] + 0.1, 255/255, 255/255, 255/255, 1,
        start[0] + -0.1, start[1] + 0.1, 255/255, 255/255, 255/255, 1,
     ]); 
-    super(device, canvasFormat, _vertices, pose);
+    console.log(image);
+    super(device, canvasFormat, _vertices, pose, image);
+    this.rotSpeed = pose[5]
   }
   
   updateGeometry() {
 
-    let angle = Math.PI / 100;
+    let angle = Math.PI / 200 / (this.rotSpeed);
     let pivot = [0, 0]; // Set the pivot point
 
     // Step 1: Compute translation motors

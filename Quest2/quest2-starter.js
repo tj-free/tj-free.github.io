@@ -64,10 +64,19 @@ async function init() {
      0, -0.6, // loop back to the first vertex
   ]);
   //await renderer.appendSceneObject(new LineStrip2DVertexObject(renderer._device, renderer._canvasFormat, vertices2));
-  await renderer.appendSceneObject(new SpaceshipObject(renderer._device, renderer._canvasFormat, new Float32Array([1, 0, 0, 0, 0.5, 0.5])));
-  await renderer.appendSceneObject(new PlanetObject(renderer._device, renderer._canvasFormat, new Float32Array([1, 0, 0, 0, 0.5, 0.5]), new Float32Array([1,0])));
-  await renderer.appendSceneObject(new PlanetObject(renderer._device, renderer._canvasFormat, new Float32Array([1, 0, 0, 0, 0.5, 0.5]), new Float32Array([0,0])));
+  
+  
+  await renderer.appendSceneObject(new PlanetObject(renderer._device, renderer._canvasFormat, new Float32Array([1, 0, 0, 0, 1.5, 1.5]), new Float32Array([0,0]), "/assets/sun.png"));
+  await renderer.appendSceneObject(new PlanetObject(renderer._device, renderer._canvasFormat, new Float32Array([1, 0, 0, 0, 0.2, 0.2]), new Float32Array([0.80,0]), "/assets/mercury.png"));
+  await renderer.appendSceneObject(new PlanetObject(renderer._device, renderer._canvasFormat, new Float32Array([1, 0, 0, 0, 0.3, 0.3]), new Float32Array([0.80,0]), "/assets/venus.png"));
+  await renderer.appendSceneObject(new PlanetObject(renderer._device, renderer._canvasFormat, new Float32Array([1, 0, 0, 0, 0.4, 0.4]), new Float32Array([0.85,0]), "/assets/earth.png"));
+  await renderer.appendSceneObject(new PlanetObject(renderer._device, renderer._canvasFormat, new Float32Array([1, 0, 0, 0, 0.5, 0.5]), new Float32Array([0.85,0]), "/assets/mars.png"));
+  await renderer.appendSceneObject(new PlanetObject(renderer._device, renderer._canvasFormat, new Float32Array([1, 0, 0, 0, 0.9, 0.9]), new Float32Array([0.65,0]), "/assets/jupiter.png"));
+  await renderer.appendSceneObject(new PlanetObject(renderer._device, renderer._canvasFormat, new Float32Array([1, 0, 0, 0, 0.7, 0.7]), new Float32Array([1.05,0]), "/assets/saturn.png"));
+  await renderer.appendSceneObject(new PlanetObject(renderer._device, renderer._canvasFormat, new Float32Array([1, 0, 0, 0, 0.6, 0.6]), new Float32Array([1.5,0]), "/assets/uranus.png"));
+  await renderer.appendSceneObject(new PlanetObject(renderer._device, renderer._canvasFormat, new Float32Array([1, 0, 0, 0, 0.65, 0.65]), new Float32Array([1.7,0]), "/assets/neptune.png"));
   //await renderer.appendSceneObject(new MoonObject(renderer._device, renderer._canvasFormat, new Float32Array([1, 0, 0, 0, 0.5, 0.5]), new Float32Array([1,0])));
+  await renderer.appendSceneObject(new SpaceshipObject(renderer._device, renderer._canvasFormat, new Float32Array([1, 0, 0, 0, 0.5, 0.5])));
 
   // run at every 100 ms
  // let angle = Math.PI / 100;
