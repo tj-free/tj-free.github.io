@@ -21,7 +21,7 @@
  *                                anything the license permits.
  */
  
-export default class UnitCube {
+export default class UnitSphere {
   constructor() {
     // Create the UnitCube vertices using two triangles
     this._pose = new Float32Array(Array(16).fill(0));
