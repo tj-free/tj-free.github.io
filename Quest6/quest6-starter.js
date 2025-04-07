@@ -44,12 +44,13 @@ async function init() {
   var camera = new Camera();
   // Create an object to trace
   var tracerObj = new RayTracingBoxObject(tracer._device, tracer._canvasFormat, camera);
-  var tracerSphere = new RayTracingSphereObject(tracer._device, tracer._canvasFormat, camera);
+  //var tracerSphere = new RayTracingSphereObject(tracer._device, tracer._canvasFormat, camera);
   await tracer.setTracerObject(tracerObj);
-  await tracer.setTracerObject(tracerSphere);
+  //await tracer.setTracerObject(tracerSphere);
 
   var movespeed = 0.05;
   var rotSpeed = 0.1;
+  var newFocal = new Float32Array(Array(2).fill(1));
   window.addEventListener("keydown", (e) => {
     switch (e.key) {
       case 'w': case 'W': 
@@ -150,11 +151,29 @@ async function init() {
         tracerObj.rotateZ(-movespeed,-rotSpeed);
         tracerObj.updateBoxPose();     
         break;
+      case 'v': case 'V':   
+        newFocal[0] = tracerObj._camera._focal[0] + 1;
+        newFocal[1] = tracerObj._camera._focal[1] + 1;
+        tracerObj.updateCameraFocal(newFocal);
+        console.log(tracerObj._camera._focal);
+        break;
+      case 'c': case 'C':   
+        newFocal[0] = tracerObj._camera._focal[0] - 1;
+        newFocal[1] = tracerObj._camera._focal[1] - 1;
+        tracerObj.updateCameraFocal(newFocal);
+        console.log(tracerObj._camera._focal);
+        break;
+      case 'b': case 'B': 
+        fpsText.toggleVisibility(); 
+        instructText.toggleVisibility();
+        break;
     }
   });
   
   let fps = '??';
-  var fpsText = new StandardTextObject('fps: ' + fps);
+  var fpsText = new StandardTextObject('fps: ' + fps, "10");
+  var instructions = 'move camera: wasdqe\nrotate camera: ijkluo\nmove box: tfghry\nrotate box: arrows,nm\nfocal length: cv\nb/B: toggle visibility';
+  var instructText = new StandardTextObject(instructions);
   
   // run animation at 60 fps
   var frameCnt = 0;

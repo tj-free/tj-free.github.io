@@ -102,7 +102,10 @@ async function init() {
         grid.updateCameraPose();  
         quad.updateCameraPose();
         break;
-      case 'f': case 'F': fpsText.toggleVisibility(); break;
+      case 'f': case 'F': 
+        fpsText.toggleVisibility(); 
+        instructText.toggleVisibility();
+        break;
     }
   });
   // mouse interactions
