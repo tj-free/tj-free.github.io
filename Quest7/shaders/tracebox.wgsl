@@ -416,10 +416,7 @@ fn computeOrthogonalMain(@builtin(global_invocation_id) global_id: vec3u) {
     // compute the pixel size
     let psize = vec2f(2, 2) / cameraPose.res.xy;
     // orthogonal camera ray sent from each pixel center at z = 0
-    var spt = vec3f(
-      (f32(uv.x) + 0.5) * psize.x - 1, 
-      (f32(uv.y) + 0.5) * psize.y - 1, 
-      0);
+    var spt = vec3f((f32(uv.x) + 0.5) * psize.x - 1, (f32(uv.y) + 0.5) * psize.y - 1, 0);
     var rdir = vec3f(0, 0, 1);
     // apply transformation
     spt = transformPt(spt);
@@ -436,32 +433,6 @@ fn computeOrthogonalMain(@builtin(global_invocation_id) global_id: vec3u) {
 fn computeProjectiveMain(@builtin(global_invocation_id) global_id: vec3u) {
   // TODO: write code to generate projection camera ray and trace the ray to assign the pixel color
   // This should be very similar to the orthogonal one above
-  // get the pixel coordinates
-  let uv = vec2i(global_id.xy);
-  let texDim = vec2i(textureDimensions(outTexture));
   
-  // Check if the pixel is within bounds
-  if (uv.x < texDim.x && uv.y < texDim.y) {
-    // compute the pixel size
-    let psize = cameraPose.focal * vec2f(2, 2) / cameraPose.res.xy;
-    
-    // Projective camera ray: start at (0, 0, 0) and go through the pixel center used in orthogonal
-    var spt = vec3f(0.0, 0.0, 0.0);
-    let centeredXY = vec2f(uv) - cameraPose.res * 0.5 + vec2f(0.5);
-    let uvWorld = centeredXY * psize;
-
-    var rdir = vec3f(uvWorld, 1.0);
-    
-    // (?x * pixel size in x + ?y * pixel size in y)
-
-    // Apply transformation (camera and object pose)
-    spt = transformPt(spt);  // Although the origin is fixed at (0, 0, 0), this is just for consistency
-    rdir = transformDir(rdir);
-    
-    // Compute the intersection with the objects in the scene
-    var hitInfo = rayBoxIntersection(spt, rdir);
-    
-    // Assign color based on hit information
-    assignColor(uv, hitInfo.x, i32(hitInfo.y));
-  }
+  
 }

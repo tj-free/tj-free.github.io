@@ -23,7 +23,6 @@
 
 import RayTracingObject from "/lib/DSViz/RayTracingObject.js"
 import UnitCube from "/lib/DS/UnitCube.js"
-import PGA3D from '/lib/Math/PGA3D.js'
 
 export default class RayTracingBoxObject extends RayTracingObject {
   constructor(device, canvasFormat, camera, showTexture = true) {
@@ -79,76 +78,7 @@ export default class RayTracingBoxObject extends RayTracingObject {
   }
   
   updateBoxPose() {
-    // TODO change this
     this._device.queue.writeBuffer(this._boxBuffer, 0, this._box._pose);
-  }
-
-  updatePose(newpose) {
-    for (let i = 0; i < 16; ++i) this._box._pose[i] = newpose[i];
-  }
-
-  moveX(d) {
-    // TODO: write code to move the camera in the x-direction
-    // Suggest to use PGA3D
-    let newdir = PGA3D.applyMotorToDir([1, 0, 0], this._camera._pose);
-    let dt = PGA3D.createTranslator(newdir[0] * d,newdir[1] * d,newdir[2] * d);
-    // accumulate translator to pose
-    let newpose = PGA3D.geometricProduct(dt, this._box._pose);
-    
-    this.updatePose(newpose);
-  }
-  
-  moveY(d) {
-    // TODO: write code to move the camera in the y-direction
-    // Suggest to use PGA3D
-    let newdir = PGA3D.applyMotorToDir([0, 1, 0], this._camera._pose);
-    let dt = PGA3D.createTranslator(newdir[0] * d,newdir[1] * d,newdir[2] * d);
-    // accumulate translator to pose
-    let newpose = PGA3D.geometricProduct(dt, this._box._pose);
-    this.updatePose(newpose);
-  }
-  
-  moveZ(d) {
-    // TODO: write code to move the camera in the z-direction
-    // Suggest to use PGA3D
-    let newdir = PGA3D.applyMotorToDir([0, 0, 1], this._camera._pose);
-    let dt = PGA3D.createTranslator(newdir[0] * d,newdir[1] * d,newdir[2] * d);
-    // accumulate translator to pose
-    let newpose = PGA3D.geometricProduct(dt, this._box._pose);
-    this.updatePose(newpose);
-  }
-  
-  rotateX(d,a) {
-    // TODO: write code to rotate the camera along its x-axis
-    // Suggest to use PGA3D
-    let newdir = PGA3D.applyMotorToDir([1, 0, 0], this._camera._pose);
-    let newstartpt = PGA3D.applyMotorToPoint([0, 0, 0], this._box._pose);
-    let dt = PGA3D.createRotor(a,newdir[0],newdir[1],newdir[2],newstartpt[0],newstartpt[1],newstartpt[2]);
-    // accumulate translator to pose
-    let newpose = PGA3D.geometricProduct(dt, this._box._pose);
-    this.updatePose(newpose);
-  }
-  
-  rotateY(d,a) {
-    // TODO: write code to rotate the camera along its y-axis
-    // Suggest to use PGA3D
-    let newdir = PGA3D.applyMotorToDir([0, 1, 0], this._camera._pose);
-    let newstartpt = PGA3D.applyMotorToPoint([0, 0, 0], this._box._pose);
-    let dt = PGA3D.createRotor(a,newdir[0],newdir[1],newdir[2],newstartpt[0],newstartpt[1],newstartpt[2]);
-    // accumulate translator to pose
-    let newpose = PGA3D.geometricProduct(dt, this._box._pose);
-    this.updatePose(newpose);
-  }
-  
-  rotateZ(d,a) {
-    // TODO: write code to rotate the camera along its z-axis
-    // Suggest to use PGA3D
-    let newdir = PGA3D.applyMotorToDir([0, 0, 1], this._camera._pose);
-    let newstartpt = PGA3D.applyMotorToPoint([0, 0, 0], this._box._pose);
-    let dt = PGA3D.createRotor(a,newdir[0],newdir[1],newdir[2],newstartpt[0],newstartpt[1],newstartpt[2]);
-    // accumulate translator to pose
-    let newpose = PGA3D.geometricProduct(dt, this._box._pose);
-    this.updatePose(newpose);
   }
   
   updateBoxScales() {
@@ -159,8 +89,7 @@ export default class RayTracingBoxObject extends RayTracingObject {
     this._device.queue.writeBuffer(this._cameraBuffer, 0, this._camera._pose);
   }
   
-  updateCameraFocal(focal = this._camera._focal) {
-    this._camera._focal = focal;
+  updateCameraFocal() {
     this._device.queue.writeBuffer(this._cameraBuffer, this._camera._pose.byteLength, this._camera._focal);
   }
 

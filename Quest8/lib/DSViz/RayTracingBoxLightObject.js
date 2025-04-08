@@ -30,6 +30,8 @@ export default class RayTracingBoxLightObject extends RayTracingObject {
     this._box = new UnitCube();
     this._camera = camera;
     this._showTexture = showTexture;
+    this._mode = 0;
+    this._lightIndex = 0;
   }
   
   async createGeometry() {
@@ -76,6 +78,14 @@ export default class RayTracingBoxLightObject extends RayTracingObject {
       size: 20 * Float32Array.BYTES_PER_ELEMENT,
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     }); 
+    this._modeBuffer = this._device.createBuffer({
+      label: "Mode " + this.getName(),
+      size: 16, // Must be at least 16 bytes due to uniform buffer alignment rules
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+    
+    // Write just the u32 value (first 4 bytes)
+    this._device.queue.writeBuffer(this._modeBuffer, 0, new Uint32Array([this._mode]));
   }
   
   updateGeometry() {
@@ -100,7 +110,13 @@ export default class RayTracingBoxLightObject extends RayTracingObject {
     this._device.queue.writeBuffer(this._cameraBuffer, this._camera._pose.byteLength, this._camera._focal);
   }
 
+  async updateMode() {
+    console.log(this._mode);
+    this._device.queue.writeBuffer(this._modeBuffer, 0, new Uint32Array([this._mode]));
+  }
+
   updateLight(light) {
+    console.log(light)
     // this function update the light buffer
     let offset = 0;
     this._device.queue.writeBuffer(this._lightBuffer, offset, light._intensity);
@@ -139,6 +155,12 @@ export default class RayTracingBoxLightObject extends RayTracingObject {
         binding: 3,
         visibility: GPUShaderStage.COMPUTE,
         buffer: {} // Light uniform buffer
+      }, {
+        binding: 4,
+        visibility: GPUShaderStage.COMPUTE,
+        buffer: {
+          type: "uniform"
+        }
       }]
     });
     this._pipelineLayout = this._device.createPipelineLayout({
@@ -189,6 +211,10 @@ export default class RayTracingBoxLightObject extends RayTracingObject {
       {
         binding: 3,
         resource: { buffer: this._lightBuffer }
+      },
+      {
+        binding: 4,
+        resource: { buffer: this._modeBuffer } 
       }
       ],
     });

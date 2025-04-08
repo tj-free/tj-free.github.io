@@ -31,8 +31,8 @@ import StandardTextObject from '/lib/DSViz/StandardTextObject.js'
 import RayTracingBoxLightObject from '/lib/DSViz/RayTracingBoxLightObject.js'
 import Camera from '/lib/Viz/3DCamera.js'
 import PointLight from '/lib/Viz/PointLight.js'
-import DirectionalLight from './lib/Viz/DirectionalLight.js'
-import SpotLight from './lib/Viz/SpotLight.js'
+import DirectionalLight from '/lib/Viz/DirectionalLight.js'
+import SpotLight from '/lib/Viz/SpotLight.js'
 
 async function init() {
   // Create a canvas tag
@@ -52,15 +52,20 @@ async function init() {
   await tracer.setTracerObject(tracerObj);
   // Create a light object and set it to our box light object
   // if you want to change light, you just need to change this object and upload it to the GPU by calling traceObje.updateLight(light)
-  var light = new DirectionalLight();
-  tracerObj.updateLight(light);
+  var pointLight = new PointLight();
+  var dirLight = new DirectionalLight();
+  var spotLight = new SpotLight();
+  tracerObj.updateLight(pointLight);
   let fps = '??';
-  var fpsText = new StandardTextObject('fps: ' + fps);
+  var fpsText = new StandardTextObject('fps: ' + fps, "10");
+  var instructions = 'move camera: wasdqe\nrotate camera: ijkluo\nv/V: change shading (lambertian, phong, toon)\nc/C: change light (point, directional, spotlight)\nb/B: toggle visibility';
+  var instructText = new StandardTextObject(instructions);
 
   var movespeed = 0.05;
   var rotSpeed = 0.1;
   var newFocal = new Float32Array(Array(2).fill(1));
-  window.addEventListener("keydown", (e) => {
+  var needToWait = false;
+  window.addEventListener("keydown", async (e) => {
     switch (e.key) {
       case 'w': case 'W': 
         camera.moveY(-movespeed);
@@ -160,17 +165,49 @@ async function init() {
         tracerObj.rotateZ(-movespeed,-rotSpeed);
         tracerObj.updateBoxPose();     
         break;
-      case 'v': case 'V':   
+      case '[':
         newFocal[0] = tracerObj._camera._focal[0] + 1;
+        newFocal[1] = tracerObj._camera._focal[1];
+        tracerObj.updateCameraFocal(newFocal);
+        console.log(tracerObj._camera._focal);
+        break;
+      case ']':
+        newFocal[0] = tracerObj._camera._focal[0] - 1;
+        newFocal[1] = tracerObj._camera._focal[1];
+        tracerObj.updateCameraFocal(newFocal);
+        console.log(tracerObj._camera._focal);
+        break;
+      case '{': 
+        newFocal[0] = tracerObj._camera._focal[0];
         newFocal[1] = tracerObj._camera._focal[1] + 1;
         tracerObj.updateCameraFocal(newFocal);
         console.log(tracerObj._camera._focal);
         break;
-      case 'c': case 'C':   
-        newFocal[0] = tracerObj._camera._focal[0] - 1;
+      case '}':  
+        newFocal[0] = tracerObj._camera._focal[0];
         newFocal[1] = tracerObj._camera._focal[1] - 1;
         tracerObj.updateCameraFocal(newFocal);
         console.log(tracerObj._camera._focal);
+        break;
+      case 'v': case 'V':
+        if (!needToWait) {
+          needToWait = true;
+          const renderTypes = 2;
+          tracerObj._mode += 1;
+          if (tracerObj._mode > renderTypes) {
+            tracerObj._mode = 0;
+          }
+          await tracerObj.updateMode();
+          needToWait = false;
+        }
+        break;
+      case 'c': case 'C':
+        const lightTypes = [pointLight,dirLight,spotLight];
+        tracerObj._lightIndex += 1;
+        if (tracerObj._lightIndex > 2) {
+          tracerObj._lightIndex = 0;
+        }
+        tracerObj.updateLight(lightTypes[tracerObj._lightIndex]);
         break;
       case 'b': case 'B': 
         fpsText.toggleVisibility(); 

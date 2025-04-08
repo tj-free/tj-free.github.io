@@ -285,6 +285,7 @@ struct Light {
 @group(0) @binding(2) var outTexture: texture_storage_2d<rgba8unorm, write>;
 // binding the Light
 @group(0) @binding(3) var<uniform> light: Light;
+@group(0) @binding(4) var<uniform> mode: u32;
 
 // a helper function to get the hit point of a ray to a quad
 fn quadRayHitCheck(s: vec3f, d: vec3f, q: Quad, ct: f32) -> vec2f {
@@ -572,83 +573,224 @@ fn computeOrthogonalMain(@builtin(global_invocation_id) global_id: vec3u) {
 @compute
 @workgroup_size(16, 16)
 fn computeProjectiveMain(@builtin(global_invocation_id) global_id: vec3u) {
-  // get the pixel coordinates
-  let uv = vec2i(global_id.xy);
-  let texDim = vec2i(textureDimensions(outTexture));
+  if (mode == 0) {
+    // get the pixel coordiantes
+    let uv = vec2i(global_id.xy);
+    let texDim = vec2i(textureDimensions(outTexture));
 
-  if (uv.x < texDim.x && uv.y < texDim.y) {
-    // compute the pixel size
-    let psize = vec2f(2, 2) / cameraPose.res.xy;
+    if (uv.x < texDim.x && uv.y < texDim.y) {
+      // compute the pixel size
+      let psize = vec2f(2, 2) / cameraPose.res.xy;
 
-    // projective camera ray
-    var spt = vec3f(0.0, 0.0, 0.0);
-    let centeredXY = vec2f(uv) - cameraPose.res * 0.5 + vec2f(0.5);
-    let uvWorld = centeredXY * psize;
 
-    var rdir = vec3f(uvWorld, 1.0);
+      // projective camera ray
+      var spt = vec3f(0.0, 0.0, 0.0);
+      let centeredXY = vec2f(uv) - cameraPose.res * 0.5 + vec2f(0.5);
+      let uvWorld = centeredXY * psize;
 
-    // apply transformation
-    spt = transformPt(spt);
-    rdir = transformDir(rdir);
+      var rdir = vec3f(uvWorld, 1.0);
 
-    // compute the intersection to the object
-    var hitInfo = rayBoxIntersection(spt, rdir);
 
-    // default background color
-    var color = vec4f(0.0, 56.0 / 255.0, 101.0 / 255.0, 1.0); // Bucknell Blue
+      // apply transformation
+      spt = transformPt(spt);
+      rdir = transformDir(rdir);
+      // compute the intersection to the object
+      var hitInfo = rayBoxIntersection(spt, rdir);
+      // assign colors
+      var color = vec4f(0.f/255, 56.f/255, 101.f/255, 1.); // Bucknell Blue
+      if (hitInfo.x > 0) { // if there is a hit
 
-    if (hitInfo.x > 0.0) {
-      // === Phong Shading ===
 
-      // Emit color
-      let emit = boxEmitColor();
+        // here, I provide you with the Lambertian shading implementation
+        // You need to modify it for other shading model
+        // first, get the emit color
+        let emit = boxEmitColor();
+        // then, compute the diffuse color, which depends on the light source
+        //   1. get the box diffuse color - i.e. the material property of diffusion on the box
+        var diffuse = boxDiffuseColor(i32(hitInfo.y)); // get the box diffuse property
+        //   2. get the box normal
+        var normal = boxNormal(i32(hitInfo.y));
+        //   3. transform the normal to the world coordinates
+        //   Note: here it is using the box pose/motor and scale. 
+        //         you will need to modify this transformation for different objects
+        normal = transformNormal(normal);
+        //   4. transform the light to the world coordinates
+        //   Note: My light is stationary, so Icancel the camera movement to keep it stationary
+        let lightPos = applyMotorToPoint(light.position.xyz, reverse(cameraPose.motor));
+        let lightDir = applyMotorToDir(light.direction.xyz, reverse(cameraPose.motor));
+        //   5. transform the hit point to the world coordiantes
+        //   Note: the hit point is in the model coordiantes, need to transform back to the world
+        var hitPt = spt + rdir * hitInfo.x;
+        hitPt = transformHitPoint(hitPt);
+        //   6. compute the light information
+        //   Note: I do the light computation in the world coordiantes because the light intensity depends on the distance and angles in the world coordiantes! If you do it in other coordinate system, make sure you transform them properly back to the world one.
+        let lightInfo = getLightInfo(lightPos, lightDir, hitPt, normal);
+        //   7. finally, modulate the diffuse color by the light
+        diffuse *= lightInfo.intensity;
+        // last, compute the final color. Here Lambertian = emit + diffuse
+        color = emit + diffuse;
+        // Note: I do not use lightInfo.lightdir here, but you will need it for Phong and tone shading
+        
 
-      // Diffuse color
-      var diffuse = boxDiffuseColor(i32(hitInfo.y));
-      var normal = boxNormal(i32(hitInfo.y));
-      normal = transformNormal(normal);
-
-      // Light setup
-      let lightPos = applyMotorToPoint(light.position.xyz, reverse(cameraPose.motor));
-      let lightDir = applyMotorToDir(light.direction.xyz, reverse(cameraPose.motor));
-
-      // Hit point in world space
-      var hitPt = spt + rdir * hitInfo.x;
-      hitPt = transformHitPoint(hitPt);
-
-      let lightInfo = getLightInfo(lightPos, lightDir, hitPt, normal);
-
-      // === Phong Components ===
-
-      // Normalize view direction (from hit point to camera)
-      let viewDir = normalize(-rdir); // pointing back toward camera
-
-      // Reflection direction of light
-      let reflection = reflect(-lightInfo.lightdir, normal); // reflect incoming light
-
-      // Ambient
-      let ambColor = vec4f(0.1, 0.1, 0.1,1.0) * lightInfo.intensity;
-
-      // Diffuse (Lambert)
-      diffuse *= lightInfo.intensity;
-
-      // Specular
-      let ks = 1.0;         // specular strength
-      let shininess = 51.0; // shininess factor (γ)
-      let specStrength = max(dot(viewDir, -reflection), 0.0);
-      let spec = ks * pow(specStrength, shininess);
-      let specColor = vec4f(1.0, 1.0, 1.0,1.0) * spec * lightInfo.intensity;
-
-      // Final color
-      let finalColor = emit + diffuse + specColor + ambColor;
-
-      // quantize colors
-      
-
-      color = vec4f(quantizeColor(finalColor.xyz), 1.0);
+      }
+      // set the final color to the pixel
+      textureStore(outTexture, uv, color); 
     }
+  } else if (mode == 1) {
+    // get the pixel coordinates
+    let uv = vec2i(global_id.xy);
+    let texDim = vec2i(textureDimensions(outTexture));
 
-    // Write to output
-    textureStore(outTexture, uv, color);
+    if (uv.x < texDim.x && uv.y < texDim.y) {
+      // compute the pixel size
+      let psize = vec2f(2, 2) / cameraPose.res.xy;
+
+      // projective camera ray
+      var spt = vec3f(0.0, 0.0, 0.0);
+      let centeredXY = vec2f(uv) - cameraPose.res * 0.5 + vec2f(0.5);
+      let uvWorld = centeredXY * psize;
+
+      var rdir = vec3f(uvWorld, 1.0);
+
+      // apply transformation
+      spt = transformPt(spt);
+      rdir = transformDir(rdir);
+
+      // compute the intersection to the object
+      var hitInfo = rayBoxIntersection(spt, rdir);
+
+      // default background color
+      var color = vec4f(0.0, 56.0 / 255.0, 101.0 / 255.0, 1.0); // Bucknell Blue
+
+      if (hitInfo.x > 0.0) {
+        // === Phong Shading ===
+
+        // Emit color
+        let emit = boxEmitColor();
+
+        // Diffuse color
+        var diffuse = boxDiffuseColor(i32(hitInfo.y));
+        var normal = boxNormal(i32(hitInfo.y));
+        normal = transformNormal(normal);
+
+        // Light setup
+        let lightPos = applyMotorToPoint(light.position.xyz, reverse(cameraPose.motor));
+        let lightDir = applyMotorToDir(light.direction.xyz, reverse(cameraPose.motor));
+
+        // Hit point in world space
+        var hitPt = spt + rdir * hitInfo.x;
+        hitPt = transformHitPoint(hitPt);
+
+        let lightInfo = getLightInfo(lightPos, lightDir, hitPt, normal);
+
+        // === Phong Components ===
+
+        // Normalize view direction (from hit point to camera)
+        let viewDir = normalize(-rdir); // pointing back toward camera
+
+        // Reflection direction of light
+        let reflection = reflect(-lightInfo.lightdir, normal); // reflect incoming light
+
+        // Ambient
+        let ambColor = vec4f(0.1, 0.1, 0.1,1.0) * lightInfo.intensity;
+
+        // Diffuse (Lambert)
+        diffuse *= lightInfo.intensity;
+
+        // Specular
+        let ks = 1.0;         // specular strength
+        let shininess = 51.0; // shininess factor (γ)
+        let specStrength = max(dot(viewDir, reflection), 0.0);
+        let spec = ks * pow(specStrength, shininess);
+        let specColor = vec4f(1.0, 1.0, 1.0,1.0) * spec * lightInfo.intensity;
+
+        // Final color
+        let finalColor = emit + diffuse + specColor + ambColor;
+        color = vec4f(clamp(finalColor.xyz, vec3f(0.0), vec3f(1.0) ), 1.0);
+      }
+
+      // Write to output
+      textureStore(outTexture, uv, color);
+    }
+  } else if (mode == 2) {
+    // get the pixel coordinates
+    let uv = vec2i(global_id.xy);
+    let texDim = vec2i(textureDimensions(outTexture));
+
+    if (uv.x < texDim.x && uv.y < texDim.y) {
+      // compute the pixel size
+      let psize = vec2f(2, 2) / cameraPose.res.xy;
+
+      // projective camera ray
+      var spt = vec3f(0.0, 0.0, 0.0);
+      let centeredXY = vec2f(uv) - cameraPose.res * 0.5 + vec2f(0.5);
+      let uvWorld = centeredXY * psize;
+
+      var rdir = vec3f(uvWorld, 1.0);
+
+      // apply transformation
+      spt = transformPt(spt);
+      rdir = transformDir(rdir);
+
+      // compute the intersection to the object
+      var hitInfo = rayBoxIntersection(spt, rdir);
+
+      // default background color
+      var color = vec4f(0.0, 56.0 / 255.0, 101.0 / 255.0, 1.0); // Bucknell Blue
+
+      if (hitInfo.x > 0.0) {
+        // === Phong Shading ===
+
+        // Emit color
+        let emit = boxEmitColor();
+
+        // Diffuse color
+        var diffuse = boxDiffuseColor(i32(hitInfo.y));
+        var normal = boxNormal(i32(hitInfo.y));
+        normal = transformNormal(normal);
+
+        // Light setup
+        let lightPos = applyMotorToPoint(light.position.xyz, reverse(cameraPose.motor));
+        let lightDir = applyMotorToDir(light.direction.xyz, reverse(cameraPose.motor));
+
+        // Hit point in world space
+        var hitPt = spt + rdir * hitInfo.x;
+        hitPt = transformHitPoint(hitPt);
+
+        let lightInfo = getLightInfo(lightPos, lightDir, hitPt, normal);
+
+        // === Phong Components ===
+
+        // Normalize view direction (from hit point to camera)
+        let viewDir = normalize(-rdir); // pointing back toward camera
+
+        // Reflection direction of light
+        let reflection = reflect(-lightInfo.lightdir, normal); // reflect incoming light
+
+        // Ambient
+        let ambColor = vec4f(0.1, 0.1, 0.1,1.0) * lightInfo.intensity;
+
+        // Diffuse (Lambert)
+        diffuse *= lightInfo.intensity;
+
+        // Specular
+        let ks = 1.0;         // specular strength
+        let shininess = 51.0; // shininess factor (γ)
+        let specStrength = max(dot(viewDir, -reflection), 0.0);
+        let spec = ks * pow(specStrength, shininess);
+        let specColor = vec4f(1.0, 1.0, 1.0,1.0) * spec * lightInfo.intensity;
+
+        // Final color
+        let finalColor = emit + diffuse + specColor + ambColor;
+
+        // quantize colors
+        
+
+        color = vec4f(quantizeColor(finalColor.xyz), 1.0);
+      }
+
+      // Write to output
+      textureStore(outTexture, uv, color);
+    }
   }
 }

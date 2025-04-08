@@ -151,14 +151,26 @@ async function init() {
         tracerObj.rotateZ(-movespeed,-rotSpeed);
         tracerObj.updateBoxPose();     
         break;
-      case 'v': case 'V':   
+      case '[':
         newFocal[0] = tracerObj._camera._focal[0] + 1;
+        newFocal[1] = tracerObj._camera._focal[1];
+        tracerObj.updateCameraFocal(newFocal);
+        console.log(tracerObj._camera._focal);
+        break;
+      case ']':
+        newFocal[0] = tracerObj._camera._focal[0] - 1;
+        newFocal[1] = tracerObj._camera._focal[1];
+        tracerObj.updateCameraFocal(newFocal);
+        console.log(tracerObj._camera._focal);
+        break;
+      case '{': 
+        newFocal[0] = tracerObj._camera._focal[0];
         newFocal[1] = tracerObj._camera._focal[1] + 1;
         tracerObj.updateCameraFocal(newFocal);
         console.log(tracerObj._camera._focal);
         break;
-      case 'c': case 'C':   
-        newFocal[0] = tracerObj._camera._focal[0] - 1;
+      case '}':  
+        newFocal[0] = tracerObj._camera._focal[0];
         newFocal[1] = tracerObj._camera._focal[1] - 1;
         tracerObj.updateCameraFocal(newFocal);
         console.log(tracerObj._camera._focal);
@@ -172,7 +184,7 @@ async function init() {
   
   let fps = '??';
   var fpsText = new StandardTextObject('fps: ' + fps, "10");
-  var instructions = 'move camera: wasdqe\nrotate camera: ijkluo\nmove box: tfghry\nrotate box: arrows,nm\nfocal length: cv\nb/B: toggle visibility';
+  var instructions = 'move camera: wasdqe\nrotate camera: ijkluo\nmove box: tfghry\nrotate box: arrows,nm\nfocal x: []\nfocal y: {}\nb/B: toggle visibility';
   var instructText = new StandardTextObject(instructions);
   
   // run animation at 60 fps
