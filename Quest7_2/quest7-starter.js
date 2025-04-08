@@ -50,7 +50,9 @@ async function init() {
   
   
   let fps = '??';
-  var fpsText = new StandardTextObject('fps: ' + fps);
+  var fpsText = new StandardTextObject('fps: ' + fps, "10");
+  var instructions = 'move camera: wasdqe\nrotate camera: ijkluo\nb/B: toggle visibility';
+  var instructText = new StandardTextObject(instructions);
 
   var movespeed = 0.05;
   var rotSpeed = 0.1;
