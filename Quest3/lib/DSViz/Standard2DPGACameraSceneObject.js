@@ -23,7 +23,7 @@
 
 import SceneObject from "/lib/DSViz/SceneObject.js"
 
-export default class Standard2DPGAPosedVertexColorObject extends SceneObject {
+export default class Standard2DPGACameraSceneObject extends SceneObject {
   constructor(device, canvasFormat, cameraPose, vertices, pose) {
     super(device, canvasFormat);
     // This assume each vertex has (x, y, r, g, b, a)

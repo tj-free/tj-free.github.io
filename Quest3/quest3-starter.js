@@ -30,8 +30,8 @@ import Renderer from '/lib/Viz/2DRenderer.js'
 import Camera from '/lib/Viz/2DCamera.js'
 import CameraLineStrip2DAliveDeadObject from '/lib/DSViz/CameraLineStrip2DAliveDeadObject.js'
 import StandardTextObject from '/lib/DSViz/StandardTextObject.js'
-import PGA2D from '/lib/Math/PGA2D.js'
 import Standard2DPGACameraSceneObject from '/lib/DSViz/Standard2DPGACameraSceneObject.js'
+import PGA2D from '/lib/Math/PGA2D.js'
 
 async function init() {
   // Create a canvas tag
