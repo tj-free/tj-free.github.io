@@ -24,7 +24,7 @@
 import SceneObject from '/lib/DSViz/SceneObject.js'
 
 export default class ParticleSystemObject extends SceneObject {
-  constructor(device, canvasFormat, canvasTag, camera, numParticles = 51200) {
+  constructor(device, canvasFormat, canvasTag, camera) {
     super(device, canvasFormat);
     this._numParticles = numParticles;
     this._step = 0;
@@ -42,6 +42,8 @@ export default class ParticleSystemObject extends SceneObject {
 
     // fragments per block break
     this._numFragParticles = 25 * 5;
+
+    this._numParticles = this._numWeatherParticles + this._numLeafParticles + this._numFragParticles;
   }
 
   
@@ -94,7 +96,7 @@ export default class ParticleSystemObject extends SceneObject {
     this._device.queue.writeBuffer(this._timeBuffer, 0, new Float32Array([time]));
 
     // Create particles
-    this._particles = new Float32Array(this._numParticles * 16); // [x, y, ix, iy, vx, vy, ls, ils]
+    this._particles = new Float32Array(this._numParticles * 32); // [x, y, ix, iy, vx, vy, ls, ils]
     // TODO 1 - create ping-pong buffers to store and update the particles in GPU
     // name the ping-pong buffers _particleBuffers
     
@@ -129,48 +131,81 @@ export default class ParticleSystemObject extends SceneObject {
     // range - how far away the particle can spawn in x,z direction
 
     const prtSpd = 0.01;
-    const lifespan = 255;
     const vars = 16;
     for (let i = 0; i < this._numParticles; ++i) {
       // type 
-      if (i < this._numWeatherParticles + this._numLeafParticles + this._numFragParticles) {
+      if (i >= this._numWeatherParticles + this._numLeafParticles) {
         this._particles[vars * i + 0] = 4; // fragment
-      } else if (i < this._numWeatherParticles + this._numLeafParticles) {
-        this._particles[vars * i + 0] = 3; // fragment
+      } else if (i >= this._numWeatherParticles) {
+        this._particles[vars * i + 0] = 3; // leaf
       } else {
         this._particles[vars * i + 0] = 0; // weather (0 for no type, 1 for rain, 2 for snow)
       }
 
-      // random x position on a plane between [-0.5, 0.5] x [0.75, 0.75]
-      this._particles[vars * i + 0] = (Math.random() * 0.5); // [-1, 1] 
-      this._particles[vars * i + 1] = 0.75; //(Math.random() * 2 - 1);
-      // store the initial positions
-      this._particles[vars * i + 2] = this._particles[10 * i + 0];
-      this._particles[vars * i + 3] = this._particles[10 * i + 1];
-      // TODO 6: update the velocity
-      // add some drift at the start
-      let random = Math.floor(Math.random() * (1 - 0.5 + 1)) + 1;
-      this._particles[vars * i + 4] = (0.75) * 0.001;//(Math.random() * prtSpd - prtSpd/2);
-      this._particles[vars * i + 5] = (Math.random() * -prtSpd);
-      // store initial velocity
-      this._particles[vars * i + 6] = this._particles[10 * i + 4]; 
-      this._particles[vars * i + 7] = this._particles[10 * i + 5];
-      // Current lifespan
-      this._particles[vars * i + 8] = (Math.random() * (lifespan/2) + lifespan/2);
-      // Max lifespan
-      this._particles[vars * i + 9] = lifespan;
+      // x position
+      this._particles[vars * i + 1] = (Math.random() * 0.5); // [-1, 1] 
+      this._particles[vars * i + 2] = 0.75; //(Math.random() * 2 - 1);
 
-      // warpSpeed
-      this._particles[vars * i + 10] = 0;
-      // warpState
-      this._particles[vars * i + 11] = 0;
-      // warpInit
-      this._particles[vars * i + 12] = 0;
+      // y position
+      this._particles[vars * i + 3] = (Math.random() * 0.5); // [-1, 1] 
+      this._particles[vars * i + 4] = 0.75; //(Math.random() * 2 - 1);
+
+      // z position
+      this._particles[vars * i + 5] = (Math.random() * 0.5); // [-1, 1] 
+      this._particles[vars * i + 6] = 0.75; //(Math.random() * 2 - 1);
+
+      // init positions
+      // x init position
+      this._particles[vars * i + 7] = this._particles[vars * i + 1];
+      this._particles[vars * i + 8] = this._particles[vars * i + 2];
+      // y init position
+      this._particles[vars * i + 9] = this._particles[vars * i + 3];
+      this._particles[vars * i + 10] = this._particles[vars * i + 4];
+      // z init position
+      this._particles[vars * i + 11] = this._particles[vars * i + 5];
+      this._particles[vars * i + 12] = this._particles[vars * i + 6];
+
+      // x vel
+      let random = Math.floor(Math.random() * (1 - 0.5 + 1)) + 1;
+      this._particles[vars * i + 13] = (0.75) * 0.001;//(Math.random() * prtSpd - prtSpd/2);
+      this._particles[vars * i + 14] = (Math.random() * -prtSpd);
+
+      // y vel
+      this._particles[vars * i + 15] = (0.75) * 0.001;//(Math.random() * prtSpd - prtSpd/2);
+      this._particles[vars * i + 16] = (Math.random() * -prtSpd);
+
+      // z vel
+      this._particles[vars * i + 17] = (0.75) * 0.001;//(Math.random() * prtSpd - prtSpd/2);
+      this._particles[vars * i + 18] = (Math.random() * -prtSpd);
+
+      // init velocities
+      // x init vel
+      this._particles[vars * i + 19] = this._particles[vars * i + 13];
+      this._particles[vars * i + 20] = this._particles[vars * i + 14];
+      // y init vel
+      this._particles[vars * i + 21] = this._particles[vars * i + 15];
+      this._particles[vars * i + 22] = this._particles[vars * i + 16];
+      // z init vel
+      this._particles[vars * i + 23] = this._particles[vars * i + 17];
+      this._particles[vars * i + 24] = this._particles[vars * i + 18];
+
+      // gravity
+      this._particles[vars * i + 25] = 0.0;
+
+      // wind
+      this._particles[vars * i + 26] = 0.0;
+
+      // lifetime
+      this._particles[vars * i + 27] = 0.0;
+
+      // range
+      this._particles[vars * i + 27] = 64.0;
 
       //dummies
-      this._particles[vars * i + 13] = 0;
-      this._particles[vars * i + 14] = 0;
-      this._particles[vars * i + 15] = 0;
+      this._particles[vars * i + 28] = 0;
+      this._particles[vars * i + 29] = 0;
+      this._particles[vars * i + 30] = 0;
+      this._particles[vars * i + 31] = 0;
     }
     
     // Copy from CPU to GPU
