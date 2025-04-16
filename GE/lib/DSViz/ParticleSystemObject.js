@@ -30,16 +30,71 @@ export default class ParticleSystemObject extends SceneObject {
     this._step = 0;
     this._canvasTag = canvasTag;
     this.camera = camera;
+
+    // rain
+    this._numRainParticles = 51200;
+
+    // snow
+    this._numSnowParticles = 51200;
+
+    // leaves per tree
+    this._numLeafParticles = 10;
+
+    // fragments per block break
+    this._numFragParticles = 25;
   }
+
+  // each particle contains:
+  // type
+  // (x,y,z)
+  // (x,y,z) init
+  // (x,y,z) speed
+  // (x,y,z) init speed
+  // gravity
+  // wind
+  // lifetime - how long the particle has been alive
+  // range - how far away the particle can spawn in x,z direction
+
   
   async createGeometry() { 
     await this.createParticleGeometry();
+
+  }
+
+  async cycleWeather() {
+    // cycle the weather, loop back around if needed
+    this._weather += 1;
+    if (this._weather > 2) this._weather = 0;
+
+    // update buffer
+    this._device.queue.writeBuffer(this._weatherBuffer, 0, this._weather);
+  }
+
+  
+
+  async generateLeaves(tree) {
+    // add leaf particles beneath the leaf blocks
+    // define the bottom of the leaves as a plane
+  }
+
+  async generateFragments(block) {
+    // add fragment particles at the center of the block
   }
   
   async createParticleGeometry() {
     // create time buffer
     this._timeBuffer = this._device.createBuffer({
       label: "Time",
+      size: 4, // 32 bits, 4 bytes in a float
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+    this._weather = 0; // sunny
+    // Copy from CPU to GPU
+    this._device.queue.writeBuffer(this._weatherBuffer, 0, this._weather);
+
+    // create weather buffer
+    this._weatherBuffer = this._device.createBuffer({
+      label: "Weather",
       size: 4, // 32 bits, 4 bytes in a float
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
@@ -74,7 +129,6 @@ export default class ParticleSystemObject extends SceneObject {
     const prtSpd = 0.01;
     const lifespan = 255;
     const vars = 16;
-    const height
     for (let i = 0; i < this._numParticles; ++i) {
       // random x position on a plane between [-0.5, 0.5] x [0.75, 0.75]
       this._particles[vars * i + 0] = (Math.random() * 0.5); // [-1, 1] 
@@ -140,7 +194,7 @@ export default class ParticleSystemObject extends SceneObject {
       }, {
         binding: 3,
         visibility: GPUShaderStage.COMPUTE,
-        buffer: { type: "read-only-storage"} // uniform buffer
+        buffer: {}
       }]
     });
     
@@ -204,7 +258,7 @@ export default class ParticleSystemObject extends SceneObject {
           },
           {
             binding: 3,
-            resource: { buffer: this._mouseBuffer }
+            resource: { buffer: this._weatherBuffer }
           }
         ],
       }),
@@ -225,7 +279,7 @@ export default class ParticleSystemObject extends SceneObject {
           },
           {
             binding: 3,
-            resource: { buffer: this._mouseBuffer }
+            resource: { buffer: this._weatherBuffer }
           }
         ],
       })
