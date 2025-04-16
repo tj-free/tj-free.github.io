@@ -31,29 +31,20 @@ export default class ParticleSystemObject extends SceneObject {
     this._canvasTag = canvasTag;
     this.camera = camera;
 
-    // rain
-    this._numRainParticles = 51200;
-
-    // snow
-    this._numSnowParticles = 51200;
+    // rain and snow
+    this._numWeatherParticles = 51200;
 
     // leaves per tree
-    this._numLeafParticles = 10;
+    this._leavesPerTree = 10;
+
+    // TODO find number of trees in 
+    this._numLeafParticles = 0;
 
     // fragments per block break
-    this._numFragParticles = 25;
+    this._numFragParticles = 25 * 5;
   }
 
-  // each particle contains:
-  // type
-  // (x,y,z)
-  // (x,y,z) init
-  // (x,y,z) speed
-  // (x,y,z) init speed
-  // gravity
-  // wind
-  // lifetime - how long the particle has been alive
-  // range - how far away the particle can spawn in x,z direction
+  
 
   
   async createGeometry() { 
@@ -126,10 +117,30 @@ export default class ParticleSystemObject extends SceneObject {
   }
     
   resetParticles() {
+    // each particle contains:
+    // type
+    // (x,y,z)
+    // (x,y,z) init
+    // (x,y,z) speed
+    // (x,y,z) init speed
+    // gravity
+    // wind
+    // lifetime - how long the particle has been alive
+    // range - how far away the particle can spawn in x,z direction
+
     const prtSpd = 0.01;
     const lifespan = 255;
     const vars = 16;
     for (let i = 0; i < this._numParticles; ++i) {
+      // type 
+      if (i < this._numWeatherParticles + this._numLeafParticles + this._numFragParticles) {
+        this._particles[vars * i + 0] = 4; // fragment
+      } else if (i < this._numWeatherParticles + this._numLeafParticles) {
+        this._particles[vars * i + 0] = 3; // fragment
+      } else {
+        this._particles[vars * i + 0] = 0; // weather (0 for no type, 1 for rain, 2 for snow)
+      }
+
       // random x position on a plane between [-0.5, 0.5] x [0.75, 0.75]
       this._particles[vars * i + 0] = (Math.random() * 0.5); // [-1, 1] 
       this._particles[vars * i + 1] = 0.75; //(Math.random() * 2 - 1);
